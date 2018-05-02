@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EventStore.Client.Embedded" Version="4.1.1" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Xunit.ScenarioReporting" Version="1.0.0-rc.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AccountBalance.domain\AccountBalance.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
