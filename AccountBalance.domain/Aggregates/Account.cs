@@ -26,12 +26,24 @@
             });
             return account;
         }
-        public void Set(Guid id, int limit, CorrelatedMessage source)
+        public void SetOverdraftLimit(Guid id, int limit, CorrelatedMessage source)
         {
             if (limit < 0)
                 throw new InvalidOperationException("Overdraft limit should be positve");
 
             Raise(new OverdraftLimited(source)
+            {
+                AccountId = id,
+                Limit = limit
+            });
+        }
+
+        public void SetDailyWireTransfertLimit(Guid id, int limit, CorrelatedMessage source)
+        {
+            if (limit < 0)
+                throw new InvalidOperationException("Daily transfert limit should be positve");
+
+            Raise(new DailyWireTransfertLimitSet(source)
             {
                 AccountId = id,
                 Limit = limit
