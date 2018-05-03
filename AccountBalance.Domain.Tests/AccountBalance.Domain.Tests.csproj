@@ -15,4 +15,10 @@
     <ProjectReference Include="..\AccountBalance.domain\AccountBalance.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="AppSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
