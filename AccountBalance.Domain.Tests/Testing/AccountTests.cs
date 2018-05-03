@@ -14,7 +14,10 @@
         readonly Guid _accountId;
         readonly EmbeddedEventStoreScenarioRunnerX<Account> _runner;
 
-        public void Dispose() { _runner.Dispose(); }
+        public void Dispose()
+        {
+            _runner.Dispose();
+        }
 
         public AccountTests(EventStoreFixture fixture)
         {
@@ -37,7 +40,8 @@
             var ev = new AccountCreated(cmd)
             {
                 AccountId = cmd.AccountId,
-                AccountHolderName = cmd.AccountHolderName
+                AccountHolderName = cmd.AccountHolderName,
+                OverdraftLimit = 0
             };
 
             await _runner.Run(
