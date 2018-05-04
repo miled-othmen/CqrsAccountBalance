@@ -1,4 +1,6 @@
-﻿namespace AccountBalance.Domain.CommandHandlers
+﻿using System.Reactive.Disposables;
+
+namespace AccountBalance.Domain.CommandHandlers
 {
     using System;
     using System.Collections.Generic;
@@ -13,26 +15,41 @@
         IDisposable
     {
         private readonly IRepository _repository;
-        private readonly IList<IDisposable> _subscriptionList;
-
+        //private readonly IList<IDisposable> _subscriptionList;
+        readonly CompositeDisposable _disposable;
         public AccountCommandHandler(IRepository repository, ICommandSubscriber dispatcher)
         {
             _repository = repository;
-            _subscriptionList = new List<IDisposable>
+            _disposable = new CompositeDisposable
             {
                 dispatcher.Subscribe<CreateAccount>(this),
                 dispatcher.Subscribe<LimitOverdraft>(this),
-                dispatcher.Subscribe<SetDailyWireTransfertLimit>(this)
+                dispatcher.Subscribe<SetDailyWireTransfertLimit>(this),
             };
         }
-
         public void Dispose()
         {
-            foreach (var disposable in _subscriptionList)
-            {
-                disposable?.Dispose();
-            }
+            _disposable?.Dispose();
         }
+
+        //public AccountCommandHandler(IRepository repository, ICommandSubscriber dispatcher)
+        //{
+        //    _repository = repository;
+        //    _subscriptionList = new List<IDisposable>
+        //    {
+        //        dispatcher.Subscribe<CreateAccount>(this),
+        //        dispatcher.Subscribe<LimitOverdraft>(this),
+        //        dispatcher.Subscribe<SetDailyWireTransfertLimit>(this)
+        //    };
+        //}
+
+        //public void Dispose()
+        //{
+        //    foreach (var disposable in _subscriptionList)
+        //    {
+        //        disposable?.Dispose();
+        //    }
+        //}
 
 
         public CommandResponse Handle(CreateAccount command)

@@ -1,39 +1,22 @@
 ﻿namespace AccountBalance.Domain.Tests
 {
-    using System;
     using System.Threading.Tasks;
-    using CommandHandlers;
     using Common;
-    using ReactiveDomain.Messaging;
     using Xunit;
     using Xunit.ScenarioReporting;
 
     [Collection("AggregateTest")]
-    public class AccountTests : IDisposable
+    public class AccountTests : TestsBase
     {
-        readonly Guid _accountId;
-        readonly EmbeddedEventStoreScenarioRunnerX<Account> _runner;
-
-        public void Dispose()
-        {
-            _runner.Dispose();
-        }
-
-        public AccountTests(EventStoreFixture fixture)
-        {
-            _accountId = Guid.NewGuid();
-            _runner = new EmbeddedEventStoreScenarioRunnerX<Account>(
-                _accountId,
-                fixture,
-                (repository, dispatcher) => new AccountCommandHandler(repository, dispatcher));
-        }
+        public AccountTests(EventStoreFixture fixture) : base(fixture)
+        { }
 
         [Fact]
         public async Task CanCreateAccount()
         {
             var cmd = new CreateAccount
             {
-                AccountId = _accountId,
+                AccountId = AccountId,
                 AccountHolderName = "NNN"
             };
 
@@ -44,7 +27,7 @@
                 OverdraftLimit = 0
             };
 
-            await _runner.Run(
+            await Runner.Run(
                 def => def.Given().When(cmd).Then(ev)
             );
         }

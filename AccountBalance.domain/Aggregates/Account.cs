@@ -6,11 +6,15 @@
 
     public class Account : EventDrivenStateMachine
     {
+        private double _overdraftLimit;
+        private double _dailyWireTransferLimit;
+        private double _dailyWireTransferAmount;
+
         Account()
         {
-            Register<AccountCreated>(
-                e => { Id = e.AccountId; }
-            );
+            Register<AccountCreated>(e => { Id = e.AccountId; });
+            Register<OverdraftLimited>(e => _overdraftLimit = e.Limit);
+            Register<DailyWireTransfertLimitSet>(e => _dailyWireTransferLimit = e.Limit);
         }
 
         public static Account Create(Guid id, string name, CorrelatedMessage source)
