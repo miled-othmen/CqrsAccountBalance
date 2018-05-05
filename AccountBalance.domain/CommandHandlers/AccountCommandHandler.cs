@@ -1,30 +1,37 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Data;
+using NodaTime;
 
 namespace AccountBalance.Domain.CommandHandlers
 {
     using System;
-    using System.Collections.Generic;
     using ReactiveDomain.Foundation;
     using ReactiveDomain.Messaging;
     using ReactiveDomain.Messaging.Bus;
+    using System.Reactive.Disposables;
+
 
     public class AccountCommandHandler :
         IHandleCommand<CreateAccount>,
         IHandleCommand<LimitOverdraft>,
         IHandleCommand<SetDailyWireTransfertLimit>,
+        IHandleCommand<DepositCheque>,
         IDisposable
     {
         private readonly IRepository _repository;
         //private readonly IList<IDisposable> _subscriptionList;
         readonly CompositeDisposable _disposable;
-        public AccountCommandHandler(IRepository repository, ICommandSubscriber dispatcher)
+        readonly IClock _clock;
+
+        public AccountCommandHandler(IRepository repository, ICommandSubscriber dispatcher, IClock clock)
         {
             _repository = repository;
+            _clock = clock;
             _disposable = new CompositeDisposable
             {
                 dispatcher.Subscribe<CreateAccount>(this),
                 dispatcher.Subscribe<LimitOverdraft>(this),
                 dispatcher.Subscribe<SetDailyWireTransfertLimit>(this),
+                dispatcher.Subscribe<DepositCheque>(this)
             };
         }
         public void Dispose()
@@ -96,6 +103,24 @@ namespace AccountBalance.Domain.CommandHandlers
                     throw new InvalidOperationException("No Account is already exist");
 
                 account.SetDailyWireTransfertLimit(command.AccountId, command.Limit, command);
+
+                _repository.Save(account);
+                return command.Succeed();
+            }
+            catch (Exception e)
+            {
+                return command.Fail(e);
+            }
+        }
+
+        public CommandResponse Handle(DepositCheque command)
+        {
+            try
+            {
+                if (!_repository.TryGetById<Account>(command.AccountId, out var account))
+                    throw new InvalidOperationException("Account Id doesn't exist");
+
+                account.DepositCheque(command.ChequeId, command.Amount, _clock, command);
 
                 _repository.Save(account);
                 return command.Succeed();
