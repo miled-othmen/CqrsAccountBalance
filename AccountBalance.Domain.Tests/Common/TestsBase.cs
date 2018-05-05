@@ -10,16 +10,16 @@
 
         protected Guid AccountId { get; }
 
-        protected EmbeddedEventStoreScenarioRunnerX<Account> Runner { get; }
+        protected EventStoreScenarioRunner<Account> Runner { get; }
 
         protected TestsBase(EventStoreFixture fixture)
         {
             AccountId = Guid.NewGuid();
             Clock = new MockClock("Europe/London");
-            Runner = new EmbeddedEventStoreScenarioRunnerX<Account>(
+            Runner = new EventStoreScenarioRunner<Account>(
                 AccountId,
                 fixture,
-                (repository, dispatcher) => new AccountCommandHandler(repository, dispatcher/*, Clock*/));
+                (repository, dispatcher) => new AccountCommandHandler(repository, dispatcher, Clock));
         }
 
         public void Dispose()

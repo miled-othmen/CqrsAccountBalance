@@ -14,7 +14,7 @@
     /// TODO: work out why this isn't working properly
     /// </summary>
     /// <typeparam name="TAggregate"></typeparam>
-    public class EmbeddedEventStoreScenarioRunnerX<TAggregate> : ReflectionBasedScenarioRunner<Event, Command, Event>, IDisposable
+    public class EventStoreScenarioRunner<TAggregate> : ReflectionBasedScenarioRunner<Event, Command, Event>, IDisposable
         where TAggregate : EventDrivenStateMachine
     {
         readonly EventStoreFixture _fixture;
@@ -24,7 +24,7 @@
         readonly string _streamName;
         long _readFromEvent;
 
-        public EmbeddedEventStoreScenarioRunnerX(Guid aggregateId, EventStoreFixture fixture, Func<IRepository, IDispatcher, IDisposable> init)
+        public EventStoreScenarioRunner(Guid aggregateId, EventStoreFixture fixture, Func<IRepository, IDispatcher, IDisposable> init)
         {
             _id = aggregateId;
             _fixture = fixture;

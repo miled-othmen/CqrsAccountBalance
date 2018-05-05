@@ -1,4 +1,7 @@
-﻿namespace AccountBalance.Domain
+﻿using System.Collections.Generic;
+using NodaTime;
+
+namespace AccountBalance.Domain
 {
     using System;
     using ReactiveDomain.Messaging;
@@ -9,12 +12,26 @@
         private double _overdraftLimit;
         private double _dailyWireTransferLimit;
         private double _dailyWireTransferAmount;
+        private List<Cheque> _depositedCheques = new List<Cheque>();
 
         Account()
         {
             Register<AccountCreated>(e => { Id = e.AccountId; });
             Register<OverdraftLimited>(e => _overdraftLimit = e.Limit);
             Register<DailyWireTransfertLimitSet>(e => _dailyWireTransferLimit = e.Limit);
+            Register<ChequeDeposited>(e =>
+            {
+                _depositedCheques.Add(
+                    new Cheque
+                    {
+                        ChequeId = e.ChequeId,
+                        Amount = e.Amount,
+                        DepositAt = e.DepositTime,
+                        ClearanceAt = e.ClearanceTime,
+                        IsCleared = false
+                    }
+                );
+            });
         }
 
         public static Account Create(Guid id, string name, CorrelatedMessage source)
@@ -51,6 +68,30 @@
             {
                 AccountId = id,
                 Limit = limit
+            });
+        }
+
+        public void DepositCheque(Guid chequeId, double amount, IClock clock, CorrelatedMessage source)
+        {
+            if (amount <= 0)
+                throw new InvalidOperationException("Cheque's amount must be strictly positive");
+
+            var depositTime = clock.GetCurrentInstant();
+            Instant clearanceTime = depositTime;
+            IsoDayOfWeek day;
+            do
+            {
+                clearanceTime = clearanceTime.Plus(Duration.FromDays(1));
+                day = clearanceTime.InUtc().DayOfWeek;
+            } while (day == IsoDayOfWeek.Saturday || day == IsoDayOfWeek.Sunday);
+
+            Raise(new ChequeDeposited(source)
+            {
+                AccountId = Id,
+                ChequeId = chequeId,
+                Amount = amount,
+                DepositTime = depositTime,
+                ClearanceTime = clearanceTime
             });
         }
     }
