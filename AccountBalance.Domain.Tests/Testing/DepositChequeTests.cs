@@ -1,12 +1,7 @@
 ﻿namespace AccountBalance.Domain.Tests
 {
-    using System;
-    using System.Threading.Tasks;
     using Common;
-    using NodaTime;
-    using ReactiveDomain.Messaging;
     using Xunit;
-    using Xunit.ScenarioReporting;
 
     [Collection("AggregateTest")]
     public class DepositChequeTests: TestsBase

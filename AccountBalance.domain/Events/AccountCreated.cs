@@ -19,7 +19,6 @@
 
         public Guid AccountId { get; set; }
         public string AccountHolderName { get; set; }
-        //why this added to event only
         public int OverdraftLimit { get; set; }
     }
 }
