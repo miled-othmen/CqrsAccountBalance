@@ -15,6 +15,7 @@ namespace AccountBalance.Domain.CommandHandlers
         IHandleCommand<LimitOverdraft>,
         IHandleCommand<SetDailyWireTransfertLimit>,
         IHandleCommand<DepositCheque>,
+        IHandleCommand<DepositCash>,
         IDisposable
     {
         private readonly IRepository _repository;
@@ -31,7 +32,8 @@ namespace AccountBalance.Domain.CommandHandlers
                 dispatcher.Subscribe<CreateAccount>(this),
                 dispatcher.Subscribe<LimitOverdraft>(this),
                 dispatcher.Subscribe<SetDailyWireTransfertLimit>(this),
-                dispatcher.Subscribe<DepositCheque>(this)
+                dispatcher.Subscribe<DepositCheque>(this),
+                dispatcher.Subscribe<DepositCash>(this)
             };
         }
         public void Dispose()
@@ -127,6 +129,26 @@ namespace AccountBalance.Domain.CommandHandlers
             }
             catch (Exception e)
             {
+                return command.Fail(e);
+            }
+        }
+
+        public CommandResponse Handle(DepositCash command)
+        {
+            try
+            {
+                if (!_repository.TryGetById<Account>(command.AccountId, out var account))
+                    throw new InvalidOperationException("Account not exisit");
+
+                account.DepositCash(command.AccountId, command.Amount, _clock, command);
+
+                _repository.Save(account);
+                return command.Succeed();
+
+            }
+            catch (Exception e)
+            {
+
                 return command.Fail(e);
             }
         }

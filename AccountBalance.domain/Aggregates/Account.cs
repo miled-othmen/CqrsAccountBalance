@@ -11,8 +11,9 @@ namespace AccountBalance.Domain
     {
         private double _overdraftLimit;
         private double _dailyWireTransferLimit;
-        private double _dailyWireTransferAmount;
+        //private double _dailyWireTransferAmount;
         private List<Cheque> _depositedCheques = new List<Cheque>();
+        private double _balance;
 
         Account()
         {
@@ -32,6 +33,7 @@ namespace AccountBalance.Domain
                     }
                 );
             });
+            Register<CashDeposited>(e => _balance = _balance + e.Amount);
         }
 
         public static Account Create(Guid id, string name, CorrelatedMessage source)
@@ -92,6 +94,21 @@ namespace AccountBalance.Domain
                 Amount = amount,
                 DepositTime = depositTime,
                 ClearanceTime = clearanceTime
+            });
+        }
+
+        public void DepositCash(Guid id, double amount, IClock clock, CorrelatedMessage source)
+        {
+            if (amount <= 0)
+                throw new InvalidOperationException("Cash's amount must be strictly positive");
+
+            var depositTime = clock.GetCurrentInstant();
+
+            Raise(new CashDeposited(source)
+            {
+                AccountId = Id,
+                Amount = amount,
+                DepositedAt = depositTime
             });
         }
     }
