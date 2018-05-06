@@ -125,6 +125,16 @@ namespace AccountBalance.Domain
             if (amount <= 0)
                 throw new InvalidOperationException("Withdrawn Cash's amount must be strictly positive");
 
+            if (_blocked)
+                throw new InvalidOperationException("Account is blocked");
+
+            if (amount > _balance + _overdraftLimit)
+                Raise(new AccountBlocked(source)
+                {
+                    AccountId = Id,
+                    Raison = "amount > _balance + _overdraftLimit"
+                });
+
             var withdrawnTime = clock.GetCurrentInstant();
 
             Raise(new CashWithdrawn(source)
@@ -140,7 +150,7 @@ namespace AccountBalance.Domain
             if (amount <= 0)
                 throw new InvalidOperationException("Wire transfer Cash's amount must be strictly positive");
 
-            if(_blocked)
+            if (_blocked)
                 throw new InvalidOperationException("Account is blocked");
 
             if (_dailyWireTransferAmount + amount > _dailyWireTransferLimit)
