@@ -88,13 +88,18 @@ namespace AccountBalance.Domain
                 throw new InvalidOperationException("Cheque's amount must be strictly positive");
 
             var depositTime = clock.GetCurrentInstant();
+
             Instant clearanceTime = depositTime;
-            IsoDayOfWeek day;
-            do
-            {
-                clearanceTime = clearanceTime.Plus(Duration.FromDays(1));
-                day = clearanceTime.InUtc().DayOfWeek;
-            } while (day == IsoDayOfWeek.Saturday || day == IsoDayOfWeek.Sunday);
+
+            switch (clearanceTime.InUtc().DayOfWeek)            {
+
+                case IsoDayOfWeek.Saturday:
+                    clearanceTime.Plus(Duration.FromDays(2));
+                    break;
+                case IsoDayOfWeek.Sunday:
+                    clearanceTime.Plus(Duration.FromDays(1));
+                    break;
+            }
 
             Raise(new ChequeDeposited(source)
             {
@@ -120,11 +125,11 @@ namespace AccountBalance.Domain
                 DepositedAt = depositTime
             });
 
-            if(_blocked)
+            if (_blocked)
                 Raise(new AccountUnblocked(source)
                 {
                     AccountId = Id,
-                    Raison= "Cash Deposited"
+                    Raison = "Cash Deposited"
                 });
         }
 
