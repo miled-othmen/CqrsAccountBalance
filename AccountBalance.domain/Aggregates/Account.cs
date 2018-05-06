@@ -42,6 +42,7 @@ namespace AccountBalance.Domain
                 _dailyWireTransferAmount = _dailyWireTransferAmount + e.Amount;
             });
             Register<AccountBlocked>(e => _blocked = true);
+            Register<AccountUnblocked>(e => _blocked = false);
         }
 
         public static Account Create(Guid id, string name, CorrelatedMessage source)
@@ -118,6 +119,13 @@ namespace AccountBalance.Domain
                 Amount = amount,
                 DepositedAt = depositTime
             });
+
+            if(_blocked)
+                Raise(new AccountUnblocked(source)
+                {
+                    AccountId = Id,
+                    Raison= "Cash Deposited"
+                });
         }
 
         public void WithdrawCash(Guid id, double amount, IClock clock, CorrelatedMessage source)
