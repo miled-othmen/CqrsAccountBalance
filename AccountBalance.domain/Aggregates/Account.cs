@@ -34,6 +34,7 @@ namespace AccountBalance.Domain
                 );
             });
             Register<CashDeposited>(e => _balance = _balance + e.Amount);
+            Register<CashWithdrawn>(e => _balance = _balance - e.Amount);
         }
 
         public static Account Create(Guid id, string name, CorrelatedMessage source)
@@ -109,6 +110,21 @@ namespace AccountBalance.Domain
                 AccountId = Id,
                 Amount = amount,
                 DepositedAt = depositTime
+            });
+        }
+
+        public void WithdrawCash(Guid id, double amount, IClock clock, CorrelatedMessage source)
+        {
+            if (amount <= 0)
+                throw new InvalidOperationException("Withdrawn Cash's amount must be strictly positive");
+
+            var withdrawnTime = clock.GetCurrentInstant();
+
+            Raise(new CashWithdrawn(source)
+            {
+                AccountId = Id,
+                Amount = amount,
+                WithdrawnAt = withdrawnTime
             });
         }
     }

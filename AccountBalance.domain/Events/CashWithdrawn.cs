@@ -5,17 +5,18 @@
     using ReactiveDomain.Messaging;
     using System;
 
-    public class CashDeposited : Event
+    public class CashWithdrawn : Event
     {
-        public CashDeposited(CorrelatedMessage source) : base(source)
+        public CashWithdrawn(CorrelatedMessage source) : base(source)
         { }
 
         [JsonConstructor]
-        public CashDeposited(CorrelationId correlationId, SourceId sourceId) : base(correlationId, sourceId)
+        public CashWithdrawn(CorrelationId correlationId, SourceId sourceId) : base(correlationId, sourceId)
         { }
 
         public Guid AccountId { get; set; }
         public double Amount { get; set; }
-        public Instant DepositedAt { get; set; }
+        public Instant WithdrawnAt { get; set; }
+
     }
 }
