@@ -11,9 +11,10 @@ namespace AccountBalance.Domain
     {
         private double _overdraftLimit;
         private double _dailyWireTransferLimit;
-        //private double _dailyWireTransferAmount;
+        private double _dailyWireTransferAmount;
         private List<Cheque> _depositedCheques = new List<Cheque>();
         private double _balance;
+        private bool _blocked;
 
         Account()
         {
@@ -35,6 +36,12 @@ namespace AccountBalance.Domain
             });
             Register<CashDeposited>(e => _balance = _balance + e.Amount);
             Register<CashWithdrawn>(e => _balance = _balance - e.Amount);
+            Register<CashWireTransfered>(e =>
+            {
+                _balance = _balance - e.Amount;
+                _dailyWireTransferAmount = _dailyWireTransferAmount + e.Amount;
+            });
+            Register<AccountBlocked>(e => _blocked = true);
         }
 
         public static Account Create(Guid id, string name, CorrelatedMessage source)
@@ -125,6 +132,31 @@ namespace AccountBalance.Domain
                 AccountId = Id,
                 Amount = amount,
                 WithdrawnAt = withdrawnTime
+            });
+        }
+
+        public void WireTransferCash(Guid id, double amount, IClock clock, CorrelatedMessage source)
+        {
+            if (amount <= 0)
+                throw new InvalidOperationException("Wire transfer Cash's amount must be strictly positive");
+
+            if(_blocked)
+                throw new InvalidOperationException("Account is blocked");
+
+            if (_dailyWireTransferAmount + amount > _dailyWireTransferLimit)
+                Raise(new AccountBlocked(source)
+                {
+                    AccountId = Id,
+                    Raison = "_dailyWireTransferLimit attempted"
+                });
+
+            var wiretransferTime = clock.GetCurrentInstant();
+
+            Raise(new CashWireTransfered(source)
+            {
+                AccountId = Id,
+                Amount = amount,
+                WireTransferedAt = wiretransferTime
             });
         }
     }
