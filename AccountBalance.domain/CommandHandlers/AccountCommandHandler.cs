@@ -1,13 +1,11 @@
-﻿using System.Data;
-using NodaTime;
-
-namespace AccountBalance.Domain.CommandHandlers
+﻿namespace AccountBalance.Domain.CommandHandlers
 {
     using System;
     using ReactiveDomain.Foundation;
     using ReactiveDomain.Messaging;
     using ReactiveDomain.Messaging.Bus;
     using System.Reactive.Disposables;
+    using NodaTime;
 
 
     public class AccountCommandHandler :

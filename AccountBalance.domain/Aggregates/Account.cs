@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using NodaTime;
-
-namespace AccountBalance.Domain
+﻿namespace AccountBalance.Domain
 {
     using System;
     using ReactiveDomain.Messaging;
     using ReactiveDomain;
+    using System.Collections.Generic;
+    using NodaTime;
 
     public class Account : EventDrivenStateMachine
     {
@@ -91,8 +90,8 @@ namespace AccountBalance.Domain
 
             Instant clearanceTime = depositTime;
 
-            switch (clearanceTime.InUtc().DayOfWeek)            {
-
+            switch (clearanceTime.InUtc().DayOfWeek)
+            {
                 case IsoDayOfWeek.Saturday:
                     clearanceTime.Plus(Duration.FromDays(2));
                     break;
